@@ -1,4 +1,28 @@
-#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# =============================================================================
+#  Version: 0.1 (March 4, 2017)
+#  Author: Rehan Ahmed (shah7567@colorado.edu), University of Colorado, Boulder
+#
+#  Contributors:
+#   Alex Killian (alki3764@colorado.edu )
+#   Dhanendra Soni (dhso4050@colorado.edu)
+#
+# =============================================================================
+#  Copyright (c) 2018. Rehan Ahmed (shah7567@colorado.edu).g
+# =============================================================================
+#
+#  This is a free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License, version 3,
+#  as published by the Free Software Foundation.
+#
+#  This is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License at <http://www.gnu.org/licenses/> for more details.
+#
+# =============================================================================
+
 """
 A set of queries to be able to access the local wikipedia database.
 
@@ -19,6 +43,9 @@ import random
 random.seed(42)
 CONSTANT_START = 58860234
 class WikipediaLocal:
+    """
+    This class holds the sql querying methods used by our wikifier.
+    """
     ALL_DISAMB_PAGE_ID = 19205681
 
     def __init__(self):
@@ -28,10 +55,22 @@ class WikipediaLocal:
                      db="wiki_db", charset='utf8', use_unicode=True)  # name of the database
 
     def html(self, title=None, id=None):
+        """
+        Get the wiki page in html format
+        :param title: string
+        :param id: int
+        :return: html string
+        """
         wiki_paras = self.html_paragraphs(title, id)
         return ''.join(wiki_paras)
 
     def html_paragraphs(self, title=None, id=None):
+        """
+        Get wiki page as a list of html paras
+        :param title: string
+        :param id: int
+        :return: [string]
+        """
         if id == None:
             id = self.get_page_id(title)
         if id == None:
@@ -45,16 +84,23 @@ class WikipediaLocal:
         return wiki_paras
 
     def __get_redirect_id(self, title):
-        '''
+        """
         Expects an already clean title! This is private. It's called as a backup
         in get_page_id.
-        '''
+        :param title: string
+        :return:
+        """
         query = '''select id from page_redirects where redirects like "%s";''' % title
         row = self.fetch_one(query)
         if row == None: raise Exception("Invalid Title: %s" % title)
         return row[0]
 
     def get_page_id(self, title):
+        """
+        Get page id of a wiki page with its title
+        :param title: string
+        :return: int
+        """
         normalized_title = clean_title(title)
         query = '''select id from Page where name like "%s";''' % normalized_title
         row = self.fetch_one(query)
@@ -62,6 +108,11 @@ class WikipediaLocal:
         return row[0]
 
     def page(self, title):
+        """
+        get the page text stored in Page table
+        :param title: string
+        :return: string
+        """
         title = clean_title(title)
         query = "select id, name, text from Page where name like {} limit 1;".format(title)
         cur = self.db.cursor()
@@ -78,6 +129,12 @@ class WikipediaLocal:
     #    return list(row)
 
     def get_inlinks_by_title(self, title, limit=500):
+        """
+        get the inlinks of a wiki title
+        :param title: string
+        :param limit: int
+        :return: [string]
+        """
         title = clean_title(title)
         query = '''select distinct Page.name, links.inlink from links
                 inner join Page on inlink = pageId where outlink like "%s"
@@ -89,6 +146,12 @@ class WikipediaLocal:
         return result
 
     def get_inlink_ids(self, title, limit=500):
+        """
+        get inlink ids of a wiki title
+        :param title: string
+        :param limit: int
+        :return: [int]
+        """
         title = clean_title(title)
         query = '''select distinct inlink from links where outlink like "%s" limit %s;''' % (title, limit)
         row = self.fetch_all(query)
@@ -98,11 +161,23 @@ class WikipediaLocal:
         return result
 
     def get_outlinks_by_id(self, id, limit=500):
+        """
+        get outlinks of a wiki page by its id
+        :param id: int
+        :param limit: int
+        :return: [string]
+        """
         query = '''select distinct outlink from links where inlink = %s limit %s;''' % (id, limit)
         row = self.fetch_all(query)
         return list(row)
 
     def get_outlinks_by_title(self, title, limit=500):
+        """
+        get outlinks of a wiki page by its title
+        :param title: string
+        :param limit: int
+        :return: [string]
+        """
         query = '''select outlink 
         from (Select pageId from Page where name like "%s") a,
         links where inlink = pageId limit %d;''' %(title, limit)
@@ -132,6 +207,15 @@ class WikipediaLocal:
         return category_members
 
     def disambiguation_pages(self, dismabiguation_category, max_cat_pages=4000, min_count=7, max_count=20, limit=250):
+        """
+        Get the disambiguation pages within a disambiguation category
+        :param dismabiguation_category: string
+        :param max_cat_pages: int
+        :param min_count: int
+        :param max_count: int
+        :param limit: int
+        :return: [(title, id, out_links_count)]
+        """
         dismabiguation_category = clean_title(dismabiguation_category)
         query_category_id = "select pageId from Category where name like '{}'".format(dismabiguation_category)
         row = self.fetch_one(query_category_id)
@@ -192,6 +276,11 @@ class WikipediaLocal:
 
 
     def possible_disambiguation_pages_simple(self, title):
+        """
+        get the possible disambiguation page just by using MySql Full Text indexing
+        :param title: string
+        :return: [(title, match_score)]
+        """
         spaced_title = normalizeTitle(title)
         spaced_title_boolean = " ".join(['+{}'.format(w.strip()) for w in spaced_title.split()])
         query = '''
@@ -219,7 +308,7 @@ class WikipediaLocal:
     def get_all_page_views(self):
         '''
         Get all the page views
-        :return:
+        :return:[int]
         '''
         query = '''select views from page_views'''
         return self.fetch_all(query)
