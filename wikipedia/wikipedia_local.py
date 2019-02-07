@@ -1,14 +1,8 @@
 #!/usr/bin/python
-import MySQLdb
-# from smc.mw.tool import process_text
-from WikiExtractor import Extractor, normalizeTitle
-from bs4 import BeautifulSoup as bs
-import re
-from utils import get_links_from_html
-import random
-random.seed(42)
-'''
-Table schemas::
+"""
+A set of queries to be able to access the local wikipedia database.
+
+The table schemas in the database::
 
 Page: |id|pageId|name|text|spaced_title|
 Category: |pageId|name|
@@ -16,8 +10,13 @@ category_pages: |id|pages|
 page_categories: |id|pages|
 page_inlinks: |id|inLinks|
 page_outlinks: |id|outLinks|
-page_redirects: |id|redirects|
-'''
+"""
+
+import MySQLdb
+from WikiExtractor import Extractor, normalizeTitle
+import re
+import random
+random.seed(42)
 CONSTANT_START = 58860234
 class WikipediaLocal:
     ALL_DISAMB_PAGE_ID = 19205681
@@ -305,7 +304,7 @@ if __name__=='__main__':
     # print(wiki.page('"Anarchism"'))
     # print the first and second columns
     # print(wiki.get_inlinks_by_id('"600744"'))
-    # print(wiki.get_inlinks_by_title('"Anarchism"'))
+    print(wiki.get_inlinks_by_title('Anarchism'))
     # print(wiki.get_outlinks_by_id('"600744"'))
     # print(wiki.get_outlinks_by_title('"Anarchism"'))
     #print(wiki.category_members("Human_name_disambiguation_pages"))
@@ -318,10 +317,10 @@ if __name__=='__main__':
     # print("Num inlinks: %s" % len(wiki.get_inlink_ids("Albert_the_Bear")))
     # print("Num disambiguations: %d" %(len(wiki.possible_disambiguation_pages("John_Smith"))))
     # pass
-    with open('entity_names.txt') as ef:
-        names = [line.strip().lower() for line in ef.readlines()]
-    n = 500
-    ds = [set(wiki.possible_disambiguation_pages_simple(name)) for name in names[:n]]
-    predicts = [name in d for name,d in zip(names[:n],ds)]
-    print(sum(predicts))
-    pass
+    # with open('entity_names.txt') as ef:
+    #     names = [line.strip().lower() for line in ef.readlines()]
+    # n = 500
+    # ds = [set(wiki.possible_disambiguation_pages_simple(name)) for name in names[:n]]
+    # predicts = [name in d for name,d in zip(names[:n],ds)]
+    # print(sum(predicts))
+    # pass
