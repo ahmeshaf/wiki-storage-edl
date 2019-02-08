@@ -259,7 +259,7 @@ def disambiguation_links(tite):
         page(tite)
     except DisambiguationError as e:
         return e.options
-    except:
+    except Exception as e:
         pass
     return []
 
