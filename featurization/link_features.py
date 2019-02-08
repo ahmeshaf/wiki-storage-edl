@@ -1,9 +1,9 @@
 """
 This files will hold the static functions to generate the common link relevancy features
 """
-import numpy as np
+
 from math import log
-from math import isnan
+
 
 NGD_DEFAULT = 5.0
 PMI_DEFAULT = -1.0
