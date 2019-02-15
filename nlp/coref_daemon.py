@@ -1,5 +1,5 @@
 from multiprocessing.connection import Listener
-
+import numpy as np
 from allennlp.predictors.coref import CorefPredictor
 
 class coref:
